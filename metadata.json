@@ -1,0 +1,6 @@
+{
+  "name": "NuAspect",
+  "description": "Replicating NuAspect, a reflective platform featuring introspection assessments, customized interactive widgets, real-time interactive doodles, and a high-quality animated Ferris wheel background.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

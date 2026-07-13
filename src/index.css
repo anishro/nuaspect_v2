@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-serif: "Cormorant Garamond", ui-serif, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-cream-light: var(--brand-cream-light);
+  --color-brand-cream-dark: var(--brand-cream-dark);
+  --color-brand-charcoal: var(--brand-charcoal);
+  --color-brand-accent-coral: var(--brand-accent-coral);
+  --color-brand-accent-sage: var(--brand-accent-sage);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-sage-teal: var(--brand-sage-teal);
+
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 45s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+:root {
+  /* User-provided highly refined warm light theme */
+  --brand-cream: #F2DEC7; /* Main editorial base background */
+  --brand-cream-light: #FCF8F4; /* Ultra-crisp soft light cream for pristine glass card panels and perfect text contrast */
+  --brand-cream-dark: #E1B8A2; /* Warm peach clay highlights */
+  --brand-charcoal: #2C2B28; /* High contrast ink color */
+  --brand-accent-coral: #CF7D65; /* Saturated soft terracotta */
+  --brand-accent-sage: #6B6D43; /* Deep olive green */
+  --brand-gold: #ABA66F; /* Dusty moss gold highlight */
+  --brand-sage-teal: #99B4AA; /* Light botanical sage-teal */
+  
+  --text-dark: #2C2B28;
+  --text-mid: #4A4840;
+  --text-soft: #7A7770;
+  --warm: #E1B8A2;
+  --olive: #6B6D43;
+  --accent: #CF7D65;
+  
+  --scrollbar-track: rgba(242, 222, 199, 0.5);
+  --scrollbar-thumb: rgba(44, 43, 40, 0.15);
+  --scrollbar-thumb-hover: rgba(44, 43, 40, 0.3);
+}
+
+.dark {
+  /* Dark Theme - cosmic dark color scheme */
+  --brand-cream: #050508;
+  --brand-cream-light: #0d0d15;
+  --brand-cream-dark: #12121d;
+  --brand-charcoal: #ffffff;
+  --brand-accent-coral: #F27D26;
+  --brand-accent-sage: #8A9CA5;
+  --brand-gold: #F59E0B;
+  
+  --text-dark: #ffffff;
+  --text-mid: #cbd5e1;
+  --text-soft: #94a3b8;
+  --warm: #1e1e2f;
+  --olive: #8A9CA5;
+  --accent: #F27D26;
+  
+  --scrollbar-track: rgba(5, 5, 8, 0.5);
+  --scrollbar-thumb: rgba(242, 125, 38, 0.2);
+  --scrollbar-thumb-hover: rgba(242, 125, 38, 0.45);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-brand-cream);
+    color: var(--color-brand-charcoal);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+}
+
+/* Glassmorphic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Pause marquee on hover */
+.hover-pause:hover .animate-marquee,
+.hover-pause:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
