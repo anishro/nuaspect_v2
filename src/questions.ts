@@ -5,6 +5,63 @@
 
 import { AssessmentQuestion } from './types';
 
+/**
+ * Maps a Google Sheet row (via the Form: Timestamp / ID / Category / Question /
+ * Answer / correct answer key) into an AssessmentQuestion. The Answer column
+ * holds all options in one field, one per line, prefixed with its letter:
+ *   a) Option text
+ *   b) Option text
+ *   c) Option text
+ *   d) Option text
+ * Header names are matched loosely (by keyword, not exact string) since the
+ * live Form's question titles are full sentences, not short column names.
+ * Returns null for incomplete rows so they're skipped rather than breaking the quiz.
+ */
+export function mapQuizRecord(record: Record<string, string>, index: number): AssessmentQuestion | null {
+  const findHeaderKey = (include: string[], exclude: string[] = []) =>
+    Object.keys(record).find(
+      (key) => include.every((kw) => key.includes(kw)) && !exclude.some((kw) => key.includes(kw))
+    );
+
+  const idKey = findHeaderKey(['id']);
+  const categoryKey = findHeaderKey(['categor']);
+  const questionKey = findHeaderKey(['question']);
+  const correctKeyKey = findHeaderKey(['correct']);
+  // "answer" also matches inside "correct answer key…", so exclude that one explicitly.
+  const answerKey = findHeaderKey(['answer'], ['correct']);
+
+  const question = questionKey ? record[questionKey] : undefined;
+  const correctKey = correctKeyKey ? record[correctKeyKey]?.trim().toLowerCase() : undefined;
+  const answerText = answerKey ? record[answerKey] : undefined;
+
+  if (!question || !correctKey || !answerText) return null;
+
+  const options = answerText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^([a-dA-D])\s*[.):]\s*(.+)$/);
+      return match ? { key: match[1].toLowerCase(), text: match[2].trim() } : null;
+    })
+    .filter((opt): opt is { key: string; text: string } => !!opt);
+
+  if (options.length < 2) return null;
+
+  return {
+    id: Number(idKey ? record[idKey] : '') || index + 1,
+    question,
+    category: categoryKey ? record[categoryKey] || 'General' : 'General',
+    correctKey,
+    options: options.map((opt) => ({
+      key: opt.key,
+      text: opt.text,
+      score: opt.key === correctKey ? 1 : 0,
+    })),
+  };
+}
+
+/** Static fallback used while the live Google Sheet is unconfigured or unreachable. */
 export const assessmentQuestions: AssessmentQuestion[] = [
   {
     id: 1,

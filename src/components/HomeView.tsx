@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'motion/react';
 import { HelpCircle, Sparkles, Send, Heart, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import AssessmentQuiz from './AssessmentQuiz';
 import Logo from './Logo';
 import Doodle from './Doodle';
+import { googleSources } from '../config/googleSources';
 
 export default function HomeView() {
   const [assessmentStarted, setAssessmentStarted] = useState(false);
@@ -16,6 +17,10 @@ export default function HomeView() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [contactEmail, setContactEmail] = useState('');
   const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  const { actionUrl: newsletterActionUrl, emailEntryId: newsletterEmailEntryId } = googleSources.newsletter;
+  const newsletterConfigured = !!(newsletterActionUrl && newsletterEmailEntryId);
+  const expectingNewsletterResponseRef = useRef(false);
 
   // Proximity/Hover 3D tracking
   const mouseX = useMotionValue(0);
@@ -80,14 +85,30 @@ export default function HomeView() {
   ];
 
   const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (contactEmail.trim()) {
-      setContactSubmitted(true);
-      setTimeout(() => {
-        setContactSubmitted(false);
-        setContactEmail('');
-      }, 5000);
+    if (!newsletterConfigured) {
+      // No Form wired up yet — fall back to a cosmetic-only confirmation so the
+      // pill still feels alive during local development / before setup.
+      e.preventDefault();
+      if (contactEmail.trim()) {
+        setContactSubmitted(true);
+        setTimeout(() => {
+          setContactSubmitted(false);
+          setContactEmail('');
+        }, 5000);
+      }
+      return;
     }
+    // Let the form submit natively (POSTing into the Google Form via the hidden
+    // iframe below); just flag that we're expecting that iframe to load next.
+    expectingNewsletterResponseRef.current = true;
+  };
+
+  const handleNewsletterIframeLoad = () => {
+    if (!expectingNewsletterResponseRef.current) return;
+    expectingNewsletterResponseRef.current = false;
+    setContactSubmitted(true);
+    setContactEmail('');
+    setTimeout(() => setContactSubmitted(false), 5000);
   };
 
   return (
@@ -466,10 +487,17 @@ export default function HomeView() {
           </span>
         </div>
 
-        <form onSubmit={handleContactSubmit} className="flex p-1 bg-brand-cream-light dark:bg-white/5 backdrop-blur-md rounded-full border border-brand-charcoal/25 dark:border-white/10 w-full shadow-lg focus-within:border-brand-accent-coral transition-colors">
+        <form
+          onSubmit={handleContactSubmit}
+          action={newsletterConfigured ? newsletterActionUrl : undefined}
+          method={newsletterConfigured ? 'POST' : undefined}
+          target={newsletterConfigured ? 'newsletter-form-target' : undefined}
+          className="flex p-1 bg-brand-cream-light dark:bg-white/5 backdrop-blur-md rounded-full border border-brand-charcoal/25 dark:border-white/10 w-full shadow-lg focus-within:border-brand-accent-coral transition-colors"
+        >
           <input
             id="newsletter-email"
             type="email"
+            name={newsletterConfigured ? newsletterEmailEntryId : undefined}
             value={contactEmail}
             onChange={(e) => setContactEmail(e.target.value)}
             placeholder="Your email address"
@@ -502,6 +530,15 @@ export default function HomeView() {
           </button>
         </form>
 
+        {newsletterConfigured && (
+          <iframe
+            name="newsletter-form-target"
+            title="newsletter-form-target"
+            className="hidden"
+            onLoad={handleNewsletterIframeLoad}
+          />
+        )}
+
         <AnimatePresence>
           {contactSubmitted && (
             <motion.p
@@ -510,7 +547,7 @@ export default function HomeView() {
               exit={{ opacity: 0 }}
               className="text-xs font-mono text-brand-accent-sage"
             >
-              Alignment processed. We will write to you soon.
+              {newsletterConfigured ? 'Alignment processed. Check your inbox for a note from us.' : 'Alignment processed. We will write to you soon.'}
             </motion.p>
           )}
         </AnimatePresence>

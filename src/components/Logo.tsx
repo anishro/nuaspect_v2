@@ -1,6 +1,5 @@
 import React from 'react';
-// @ts-expect-error - static asset import
-import customLogo from '../../assets/.aistudio/logo.png';
+import customLogo from '../../assets/logo.png';
 
 interface LogoProps {
   className?: string;

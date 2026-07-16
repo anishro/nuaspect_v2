@@ -29,3 +29,23 @@ export interface AssessmentResult {
   title: string;
   description: string;
 }
+
+export interface KnowledgeHubArticle {
+  id: string;
+  title: string;
+  category: string;
+  summary: string;
+  /** Full article text, already split into paragraphs. */
+  body: string[];
+  /** Optional external reference link, shown as a secondary action in the reader. */
+  link?: string;
+  date?: string;
+}
+
+export interface AcademyCourse {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  youtubeId: string;
+}

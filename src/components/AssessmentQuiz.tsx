@@ -5,8 +5,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, RotateCcw, BookOpen, CheckCircle2, HelpCircle } from 'lucide-react';
-import { assessmentQuestions, getAdviceForScore } from '../questions';
+import { ChevronRight, RotateCcw, BookOpen, CheckCircle2, HelpCircle, Loader2 } from 'lucide-react';
+import { assessmentQuestions as fallbackQuestions, mapQuizRecord, getAdviceForScore } from '../questions';
+import { useGoogleSheet } from '../lib/googleSheets';
+import { googleSources } from '../config/googleSources';
+import { AssessmentQuestion } from '../types';
 
 export default function AssessmentQuiz() {
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -14,6 +17,23 @@ export default function AssessmentQuiz() {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [isFinished, setIsFinished] = useState(false);
   const [isFinalScreen, setIsFinalScreen] = useState(false);
+
+  const { data: sheetQuestions, loading, unconfigured, error } = useGoogleSheet<AssessmentQuestion>(
+    googleSources.quiz.endpointUrl,
+    mapQuizRecord
+  );
+
+  // Live sheet takes priority; fall back to the bundled question set until it's configured or if it fails.
+  const assessmentQuestions = unconfigured || error || sheetQuestions.length === 0 ? fallbackQuestions : sheetQuestions;
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-3xl mx-auto bg-brand-cream-light/65 dark:bg-[#0d0d15]/85 backdrop-blur-xl rounded-3xl border border-brand-charcoal/15 dark:border-white/10 shadow-lg dark:shadow-2xl p-16 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-6 h-6 text-brand-accent-coral animate-spin" />
+        <span className="text-xs font-mono tracking-widest text-brand-charcoal/50 dark:text-white/40 uppercase">Loading Assessment</span>
+      </div>
+    );
+  }
 
   const currentQuestion = assessmentQuestions[currentIdx];
 
